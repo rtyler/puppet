@@ -29,6 +29,23 @@ Feature: Convert XML to Puppet DSL
       node default { }
     """
 
+  Scenario: Multiple nodes declared
+    Given the XML:
+    """
+      <puppet>
+        <nodes>
+          <node name="default"/>
+          <node name="/^lucid32$/"/>
+        </nodes>
+      </puppet>
+    """
+    When I generate Puppet
+    Then I should have the string:
+    """
+      node default { }
+      node /^lucid32$/ { }
+    """
+
   Scenario: Node with a resource
     Given the XML:
     """
