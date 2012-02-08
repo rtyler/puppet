@@ -113,7 +113,7 @@ class Puppet::Parser::TypeLoader
     module_names.each do |name|
       mod = Puppet::Module.new(name, :environment => environment)
       Find.find(File.join(mod.path, "manifests")) do |path|
-        if path =~ /\.pp$/ or path =~ /\.rb$/
+        if path =~ /\.pp$/ or path =~ /\.rb$/ or path =~ /\.ppx$/
           import(path)
         end
       end
@@ -152,7 +152,11 @@ class Puppet::Parser::TypeLoader
   def parse_file(file)
     Puppet.debug("importing '#{file}' in environment #{environment}")
     parser = Puppet::Parser::Parser.new(environment)
-    parser.file = file
+    if file.end_with? '.ppx'
+      parser.string = Puppet::Parser::Xml.to_puppet(::File.read(file))
+    else
+      parser.file = file
+    end
     return parser.parse
   end
 
