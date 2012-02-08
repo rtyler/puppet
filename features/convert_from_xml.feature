@@ -12,66 +12,6 @@ Feature: Convert XML to Puppet DSL
     When I generate Puppet
     Then I should have an empty string
 
-
-  Scenario: Simple node declaration
-    Given the XML:
-    """
-      <puppet>
-        <nodes>
-          <node name="default">
-          </node>
-        </nodes>
-      </puppet>
-    """
-    When I generate Puppet
-    Then I should have the string:
-    """
-      node default { }
-    """
-
-  Scenario: Multiple nodes declared
-    Given the XML:
-    """
-      <puppet>
-        <nodes>
-          <node name="default"/>
-          <node name="/^lucid32$/"/>
-        </nodes>
-      </puppet>
-    """
-    When I generate Puppet
-    Then I should have the string:
-    """
-      node default { }
-      node /^lucid32$/ { }
-    """
-
-  Scenario: Node with a resource
-    Given the XML:
-    """
-      <puppet>
-        <nodes>
-          <node name="default">
-            <resources>
-              <user name="tyler">
-                <ensure>present</ensure>
-              </user>
-            </resources>
-          </node>
-        </nodes>
-      </puppet>
-    """
-    When I generate Puppet
-    Then I should have the string:
-    """
-      node default {
-        user {
-          "tyler" :
-            ensure => present;
-        }
-      }
-    """
-
   Scenario: Basic Class definition
     Given the XML:
     """
@@ -116,27 +56,6 @@ Feature: Convert XML to Puppet DSL
     """
       class testclass {
         include anotherclass
-      }
-    """
-
-  Scenario: node definition with includs
-    Given the XML:
-    """
-      <puppet>
-        <nodes>
-          <node name="default">
-            <includes>
-              <include>testclass</include>
-            </includes>
-          </node>
-        </nodes>
-      </puppet>
-    """
-    When I generate Puppet
-    Then I should have the string:
-    """
-      node default {
-        include testclass
       }
     """
 
