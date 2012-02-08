@@ -1,25 +1,34 @@
+require 'erb'
 require 'rexml/document'
 
 class Puppet::Parser::Xml
+  NODE_TEMPLATE = ERB.new("""node <%= node_name %> {
+                                <%= node_includes %>
+                                <%= node_resources %>
+                              }
+                          """)
+  CLASS_TEMPLATE = ERB.new("""class <%= klass_name %> {
+                                <%= klass_includes %>
+                                <%= klass_resources %>
+                              }
+                          """)
+
   def self.to_puppet(xml)
     doc = REXML::Document.new(xml)
     output = ''
     doc.elements.each('puppet/nodes/node') do |element|
       node_name = element.attributes['name']
-
-      output += """node #{node_name} {\n"""
-      output += self.parse_includes(element)
-      output += self.parse_resources(element)
-      output += """}"""
+      node_includes = self.parse_includes(element)
+      node_resources = self.parse_resources(element)
+      output += NODE_TEMPLATE.result(binding)
     end
 
-    doc.elements.each('puppet/classes/class') do |element|
-      class_name = element.attributes['name']
 
-      output += """class #{class_name} {\n"""
-      output += self.parse_includes(element)
-      output += self.parse_resources(element)
-      output += """}"""
+    doc.elements.each('puppet/classes/class') do |element|
+      klass_name = element.attributes['name']
+      klass_resources = self.parse_resources(element)
+      klass_includes = self.parse_includes(element)
+      output += CLASS_TEMPLATE.result(binding)
     end
     return output
   end
@@ -32,14 +41,19 @@ class Puppet::Parser::Xml
     output
   end
 
+  RESOURCES_TEMPLATE = ERB.new("""<%= resource_type %> {
+                                    \"<%= resource_name %>\" :
+                                    <%= resources %>
+                                  }""")
+
   def self.parse_resources(parent)
     output = ''
     parent.elements.each('resources') do |element|
       element.elements.each do |child|
-        output += "#{child.name} {\n"
-        output += "\"#{child.attributes['name']}\" :\n"
-        output += self.parse_resource(child)
-        output += "}"
+        resource_type = child.name
+        resource_name = child.attributes['name']
+        resources = self.parse_resource(child)
+        output += RESOURCES_TEMPLATE.result(binding)
       end
     end
     output
