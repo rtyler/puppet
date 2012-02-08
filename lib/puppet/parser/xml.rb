@@ -45,11 +45,28 @@ class Puppet::Parser::Xml
     output
   end
 
+  NOT_QUOTABLE = ['ensure']
+
   def self.parse_resource(parent)
     output = ''
     count = parent.elements.size
     parent.elements.each_with_index do |child, index|
-      output += "#{child.name} => #{child.text}"
+      if child.name == 'requires'
+        # Special case handling for setting multiple require statements since
+        # they'll be placed under a <requires/> parent node for optimal XML
+        # groovyness
+        requires = []
+        child.elements.each('require') do |requires_child|
+          requires << requires_child.text
+        end
+        output += "require => [#{requires.join(', ')}]"
+      else
+        text = "\"#{child.text}\""
+        if NOT_QUOTABLE.include? child.name
+          text = child.text
+        end
+        output += "#{child.name} => #{text}"
+      end
       if (index + 1) == count
         output += ";"
       else

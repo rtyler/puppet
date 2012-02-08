@@ -122,3 +122,35 @@ Feature: Convert XML to Puppet DSL
         include testclass
       }
     """
+
+  Scenario: specifying requires
+    Given the XML:
+    """
+      <puppet>
+        <classes>
+          <class name="users">
+            <resources>
+              <user name="vagrant">
+                <requires>
+                  <require>Group["vagrant"]</require>
+                </requires>
+                <ensure>present</ensure>
+                <shell>/bin/bash</shell>
+              </user>
+            </resources>
+          </class>
+        </classes>
+      </puppet>
+    """
+    When I generate Puppet
+    Then I should have the string:
+    """
+        class users {
+          user {
+            "vagrant" :
+              require => [Group["vagrant"]],
+              ensure => present,
+              shell => "/bin/bash";
+          }
+        }
+    """
