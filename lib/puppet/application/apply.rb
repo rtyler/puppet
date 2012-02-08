@@ -171,7 +171,14 @@ Copyright (c) 2011 Puppet Labs, LLC Licensed under the Apache 2.0 License
       manifest = command_line.args.shift
       raise "Could not find file #{manifest}" unless ::File.exist?(manifest)
       Puppet.warning("Only one file can be applied per run.  Skipping #{command_line.args.join(', ')}") if command_line.args.size > 0
-      Puppet[:manifest] = manifest
+
+      if manifest.end_with? '.ppx'
+        puts "Thanks for using Puppet/XML - A brand new synergy"
+        puts
+        Puppet[:code] = Puppet::Parser::Xml.to_puppet(::File.read(manifest))
+      else
+        Puppet[:manifest] = manifest
+      end
     end
 
     unless Puppet[:node_name_fact].empty?
