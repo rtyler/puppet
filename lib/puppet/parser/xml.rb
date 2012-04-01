@@ -13,6 +13,25 @@ class Puppet::Parser::Xml
                               }
                           """)
 
+  def self.to_catalog(xml)
+    catalog = Puppet::Resource::Catalog.new
+    doc = REXML::Document.new(xml)
+
+    # Lots of duplication 
+    doc.elements.each('puppet/node') do |element|
+      node = Puppet::Resource::Type.new(:node, element.attributes['name'])
+      # PENDING LOLZ
+      #catalog.add_class(node)
+    end
+
+    doc.elements.each('puppet/class') do |element|
+      resource = Puppet::Resource.new(:class, element.attributes['name'])
+      catalog.add_resource(resource)
+    end
+
+    catalog
+  end
+
   def self.to_puppet(xml)
     doc = REXML::Document.new(xml)
     output = ''
