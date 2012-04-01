@@ -42,15 +42,36 @@ describe Puppet::Parser::Xml do
         @catalog = Puppet::Parser::Xml.to_catalog(doc)
       end
 
-      it 'should have a synergy class in the resources' do
-        @catalog.resources.should_not be_empty
+      it 'should have resources' do
         @catalog.resources.size.should be 2
+      end
+
+      it 'should have a synergy class in the resources' do
+        found = false
+        @catalog.resources.each do |resource|
+          next if (resource.type != 'Class') && (resource.title != 'synergy')
+          found = true
+        end
+        found.should be true
+      end
+
+      it 'should create a correct relationship between nodes' do
         @catalog.resources.each do |resource|
           next if resource.type != 'Class'
           dependents = @catalog.dependents(resource)
           dependents.size.should be 1
           dependents.first.title.should == 'puppet'
         end
+      end
+
+      it 'should have create the appropriate attributes for the resources' do
+        found = false
+        @catalog.resources.each do |resource|
+          next if resource.type != 'Group'
+          found = true
+          resource[:ensure].should == 'present'
+        end
+        found.should be true
       end
     end
 

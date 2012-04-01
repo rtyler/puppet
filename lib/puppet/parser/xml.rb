@@ -31,11 +31,24 @@ class Puppet::Parser::Xml
         next if child.instance_of? REXML::Text
         child_resource = Puppet::Resource.new(child.name.to_sym,
                                  child.attributes['name'])
+        properties_as_hash(child).each do |key, value|
+          child_resource[key] = value
+        end
         catalog.add_resource(child_resource)
         catalog.add_edge(resource, child_resource)
       end
     end
     catalog
+  end
+
+  def self.properties_as_hash(resourceNode)
+    result = {}
+    resourceNode.children.each do |child|
+      next if child.instance_of? REXML::Text
+      next if child.name == 'name'
+      result[child.name.to_sym] = child.text.strip
+    end
+    result
   end
 
   def self.to_puppet(xml)
