@@ -16,15 +16,11 @@ Feature: Convert XML to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <classes>
           <class name="testclass">
-            <resources>
-              <package name="git">
-                <ensure>present</ensure>
-              </package>
-            </resources>
+            <package name="git">
+              <ensure>present</ensure>
+            </package>
           </class>
-        </classes>
       </puppet>
     """
     When I generate Puppet
@@ -42,13 +38,9 @@ Feature: Convert XML to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <classes>
-          <class name="testclass">
-            <includes>
-              <include>anotherclass</include>
-            </includes>
-          </class>
-        </classes>
+        <class name="testclass">
+          <include>anotherclass</include>
+        </class>
       </puppet>
     """
     When I generate Puppet
@@ -63,19 +55,13 @@ Feature: Convert XML to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <classes>
-          <class name="users">
-            <resources>
-              <user name="vagrant">
-                <requires>
-                  <require>Group["vagrant"]</require>
-                </requires>
-                <ensure>present</ensure>
-                <shell>/bin/bash</shell>
-              </user>
-            </resources>
-          </class>
-        </classes>
+        <class name="users">
+            <user name="vagrant">
+              <require>Group["vagrant"]</require>
+              <ensure>present</ensure>
+              <shell>/bin/bash</shell>
+            </user>
+        </class>
       </puppet>
     """
     When I generate Puppet
@@ -84,7 +70,7 @@ Feature: Convert XML to Puppet DSL
         class users {
           user {
             "vagrant" :
-              require => [Group["vagrant"]],
+              require => Group["vagrant"],
               ensure => present,
               shell => "/bin/bash";
           }

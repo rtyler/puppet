@@ -24,7 +24,7 @@ class Puppet::Parser::Xml
     end
 
 
-    doc.elements.each('puppet/classes/class') do |element|
+    doc.elements.each('puppet/class') do |element|
       klass_name = element.attributes['name']
       klass_resources = self.parse_resources(element)
       klass_includes = self.parse_includes(element)
@@ -35,7 +35,7 @@ class Puppet::Parser::Xml
 
   def self.parse_includes(parent)
     output = ''
-    parent.elements.each('includes/include') do |element|
+    parent.elements.each('include') do |element|
       output += "include #{element.text}\n"
     end
     output
@@ -48,46 +48,46 @@ class Puppet::Parser::Xml
 
   def self.parse_resources(parent)
     output = ''
-    parent.elements.each('resources') do |element|
-      element.elements.each do |child|
-        resource_type = child.name
-        resource_name = child.attributes['name']
-        resources = self.parse_resource(child)
-        output += RESOURCES_TEMPLATE.result(binding)
+    parent.children.each do |element|
+      next if element.instance_of? REXML::Text
+      resource_type = element.name
+      next if resource_type == 'include'
+
+      resource_name = element.attributes['name']
+      resources = []
+
+      element.each do |child|
+        resources << self.parse_resource(child)
       end
+
+      resources = resources.compact.join(",\n")
+      resources += ';'
+
+      output += RESOURCES_TEMPLATE.result(binding)
     end
     output
   end
 
-  NOT_QUOTABLE = ['ensure']
+  NOT_QUOTABLE = ['present']
 
-  def self.parse_resource(parent)
-    output = ''
-    count = parent.elements.size
-    parent.elements.each_with_index do |child, index|
-      if child.name == 'requires'
-        # Special case handling for setting multiple require statements since
-        # they'll be placed under a <requires/> parent node for optimal XML
-        # groovyness
-        requires = []
-        child.elements.each('require') do |requires_child|
-          requires << requires_child.text
-        end
-        output += "require => [#{requires.join(', ')}]"
+  def self.parse_resource(element)
+    # will get called for each child, [whitespace, <ensure>, whitespace ]
+    if element.instance_of? REXML::Text
+      text = element.to_s
+      unless text.strip.empty?
+        return text
       else
-        text = "\"#{child.text}\""
-        if NOT_QUOTABLE.include? child.name
-          text = child.text
-        end
-        output += "#{child.name} => #{text}"
+        return nil
       end
-      if (index + 1) == count
-        output += ";"
-      else
-        output += ","
-      end
-      output += "\n"
     end
-    output
+
+    name = element.attributes['name']
+    text = element.text
+
+    unless (NOT_QUOTABLE.include? text) || (element.name == 'require')
+      text = "\"#{text}\""
+    end
+
+    return "#{element.name} => #{text}"
   end
 end
