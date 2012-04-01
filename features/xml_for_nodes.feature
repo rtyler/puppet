@@ -7,10 +7,8 @@ Feature: Convert XML for nodes to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <nodes>
-          <node name="default">
-          </node>
-        </nodes>
+        <node name="default">
+        </node>
       </puppet>
     """
     When I generate Puppet
@@ -23,10 +21,8 @@ Feature: Convert XML for nodes to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <nodes>
-          <node name="default"/>
-          <node name="/^lucid32$/"/>
-        </nodes>
+        <node name="default"/>
+        <node name="/^lucid32$/"/>
       </puppet>
     """
     When I generate Puppet
@@ -40,15 +36,11 @@ Feature: Convert XML for nodes to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <nodes>
-          <node name="default">
-            <resources>
-              <user name="tyler">
-                <ensure>present</ensure>
-              </user>
-            </resources>
-          </node>
-        </nodes>
+        <node name="default">
+          <user name="tyler">
+            <ensure>present</ensure>
+          </user>
+        </node>
       </puppet>
     """
     When I generate Puppet
@@ -66,13 +58,9 @@ Feature: Convert XML for nodes to Puppet DSL
     Given the XML:
     """
       <puppet>
-        <nodes>
-          <node name="default">
-            <includes>
-              <include>testclass</include>
-            </includes>
-          </node>
-        </nodes>
+        <node name="default">
+          <include>testclass</include>
+        </node>
       </puppet>
     """
     When I generate Puppet

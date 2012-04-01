@@ -16,7 +16,7 @@ class Puppet::Parser::Xml
   def self.to_puppet(xml)
     doc = REXML::Document.new(xml)
     output = ''
-    doc.elements.each('puppet/nodes/node') do |element|
+    doc.elements.each('puppet/node') do |element|
       node_name = element.attributes['name']
       node_includes = self.parse_includes(element)
       node_resources = self.parse_resources(element)
