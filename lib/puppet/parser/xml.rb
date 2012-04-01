@@ -27,8 +27,14 @@ class Puppet::Parser::Xml
     doc.elements.each('puppet/class') do |element|
       resource = Puppet::Resource.new(:class, element.attributes['name'])
       catalog.add_resource(resource)
+      element.children.each  do |child|
+        next if child.instance_of? REXML::Text
+        child_resource = Puppet::Resource.new(child.name.to_sym,
+                                 child.attributes['name'])
+        catalog.add_resource(child_resource)
+        catalog.add_edge(resource, child_resource)
+      end
     end
-
     catalog
   end
 

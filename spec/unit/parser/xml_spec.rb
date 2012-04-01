@@ -30,14 +30,27 @@ describe Puppet::Parser::Xml do
     end
 
     context 'with a simple defined class' do
-      let(:doc) { '<puppet><class name="synergy"></class></puppet>' }
+      let(:doc) { '''
+          <puppet>
+            <class name="synergy">
+              <group name="puppet">
+                <ensure>present</ensure>
+              </group>
+            </class>
+          </puppet>''' }
       before :each do
         @catalog = Puppet::Parser::Xml.to_catalog(doc)
       end
 
       it 'should have a synergy class in the resources' do
         @catalog.resources.should_not be_empty
-        @catalog.resources.first.title.should == 'Synergy'
+        @catalog.resources.size.should be 2
+        @catalog.resources.each do |resource|
+          next if resource.type != 'Class'
+          dependents = @catalog.dependents(resource)
+          dependents.size.should be 1
+          dependents.first.title.should == 'puppet'
+        end
       end
     end
 
