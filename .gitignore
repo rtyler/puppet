@@ -1,3 +1,6 @@
 .rspec
 results
 .*.sw[op]
+.rvmrc
+Gemfile.lock
+pkg
