@@ -19,9 +19,8 @@ class Puppet::Parser::Xml
 
     # Lots of duplication 
     doc.elements.each('puppet/node') do |element|
-      node = Puppet::Resource::Type.new(:node, element.attributes['name'])
-      # PENDING LOLZ
-      #catalog.add_class(node)
+      node = Puppet::Node.new(element.attributes['name'])
+      catalog.add_class(node)
     end
 
     doc.elements.each('puppet/class') do |element|

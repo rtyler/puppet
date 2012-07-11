@@ -164,6 +164,7 @@ Copyright (c) 2011 Puppet Labs, LLC Licensed under the Apache 2.0 License
   end
 
   def main
+    synergy = nil
     # Set our code or file to use.
     if options[:code] or command_line.args.length == 0
       Puppet[:code] = options[:code] || STDIN.read
@@ -173,9 +174,9 @@ Copyright (c) 2011 Puppet Labs, LLC Licensed under the Apache 2.0 License
       Puppet.warning("Only one file can be applied per run.  Skipping #{command_line.args.join(', ')}") if command_line.args.size > 0
 
       if manifest.end_with? '.ppx'
-        puts "Thanks for using Puppet/XML - A brand new synergy"
+        puts "Thanks for using Puppet/XML - A brand new performant synergy"
         puts
-        Puppet[:code] = Puppet::Parser::Xml.to_puppet(::File.read(manifest))
+        synergy = Puppet::Parser::Xml.to_catalog(:File.read(manifest))
       else
         Puppet[:manifest] = manifest
       end
@@ -214,7 +215,10 @@ Copyright (c) 2011 Puppet Labs, LLC Licensed under the Apache 2.0 License
     begin
       # Compile our catalog
       starttime = Time.now
-      catalog = Puppet::Resource::Catalog.indirection.find(node.name, :use_node => node)
+      catalog = synergy
+      unless catalog.nil?
+        catalog = Puppet::Resource::Catalog.indirection.find(node.name, :use_node => node)
+      end
 
       # Translate it to a RAL catalog
       catalog = catalog.to_ral

@@ -23,7 +23,6 @@ describe Puppet::Parser::Xml do
       end
 
       it 'should create a catalog with a node resource' do
-        pending  'Until I LRN 2 AST'
         @catalog.resources.should be_empty
         @catalog.classes.should_not be_empty
       end
